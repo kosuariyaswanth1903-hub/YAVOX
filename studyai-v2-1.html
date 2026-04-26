@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyAI — Anime Study Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Nunito:wght@300;400;600;700;800;900&family=Noto+Sans+Telugu:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#080614;--bg2:#0e0c1e;--panel:#141028;--panel2:#1c1838;
+  --border:#252048;--border2:#332d60;
+  --pink:#ff6eb4;--pink2:#e91e8c;
+  --purple:#9b6dff;--purple2:#6c3fff;
+  --cyan:#00e5ff;--yellow:#ffd60a;
+  --green:#00e676;--red:#ff1744;
+  --white:#f0eaff;--text:#9888cc;--dim:#4a3a7a;
+}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* BG */
+.bg-fx{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 50% at 10% 10%,rgba(155,109,255,.1),transparent 60%),
+             radial-gradient(ellipse 60% 40% at 90% 80%,rgba(255,110,180,.08),transparent 60%),
+             radial-gradient(ellipse 40% 30% at 50% 50%,rgba(0,229,255,.04),transparent 70%);}
+.stars{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(1px 1px at 8% 12%,rgba(255,255,255,.7),transparent),
+    radial-gradient(1px 1px at 22% 45%,rgba(255,255,255,.5),transparent),
+    radial-gradient(1px 1px at 55% 8%,rgba(255,255,255,.6),transparent),
+    radial-gradient(1px 1px at 78% 55%,rgba(255,255,255,.4),transparent),
+    radial-gradient(1px 1px at 92% 22%,rgba(255,255,255,.7),transparent),
+    radial-gradient(1.5px 1.5px at 35% 78%,rgba(255,182,197,.9),transparent),
+    radial-gradient(1.5px 1.5px at 65% 92%,rgba(155,109,255,.9),transparent),
+    radial-gradient(1px 1px at 48% 38%,rgba(0,229,255,.6),transparent);
+  animation:twinkle 3s ease-in-out infinite alternate;}
+@keyframes twinkle{from{opacity:.6}to{opacity:1}}
+
+/* SCREENS */
+.screen{display:none;position:relative;z-index:1;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
+.center-screen{align-items:center;justify-content:center;padding:20px;}
+
+/* CARD */
+.card{background:rgba(20,16,40,.97);border:1px solid var(--border2);
+  position:relative;overflow:hidden;
+  box-shadow:0 0 80px rgba(155,109,255,.15),0 0 160px rgba(255,110,180,.08);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--purple),var(--pink),var(--cyan),var(--purple));
+  background-size:300% 100%;animation:gradMove 3s linear infinite;}
+@keyframes gradMove{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+
+/* INPUTS */
+.inp{width:100%;background:rgba(8,6,20,.9);border:1px solid var(--border2);
+  color:var(--white);font-family:'Nunito',sans-serif;font-size:.9rem;
+  padding:12px 16px;outline:none;border-radius:8px;margin-bottom:12px;transition:border-color .2s;}
+.inp:focus{border-color:var(--purple);}
+.inp::placeholder{color:var(--dim);}
+select.inp{cursor:pointer;appearance:none;}
+
+/* BUTTONS */
+.btn{padding:13px 24px;border:none;border-radius:8px;font-family:'Nunito',sans-serif;
+  font-size:.88rem;font-weight:800;letter-spacing:1px;cursor:pointer;transition:all .25s;}
+.btn-grad{background:linear-gradient(135deg,var(--purple2),var(--pink2));color:#fff;width:100%;}
+.btn-grad:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(155,109,255,.4);}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text);border-radius:20px;padding:8px 20px;font-size:.78rem;}
+.btn-outline:hover{border-color:var(--purple);color:var(--purple);}
+.btn-sm{padding:7px 16px;font-size:.72rem;border-radius:20px;}
+.btn-cyan{background:transparent;border:1px solid var(--cyan);color:var(--cyan);}
+.btn-cyan:hover{background:rgba(0,229,255,.1);}
+.btn-pink{background:transparent;border:1px solid var(--pink);color:var(--pink);}
+.btn-pink:hover{background:rgba(255,110,180,.1);}
+
+/* LABELS */
+.lbl{font-size:.6rem;color:var(--purple);letter-spacing:3px;font-weight:700;margin-bottom:8px;display:block;}
+
+/* FLOAT ANIM */
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes pulse{0%,100%{box-shadow:0 0 10px rgba(155,109,255,.3)}50%{box-shadow:0 0 25px rgba(155,109,255,.7)}}
+
+.hidden{display:none!important;}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.6rem;font-weight:700;letter-spacing:1px;}
+
+/* PROGRESS */
+.prog-wrap{width:100%;height:5px;background:var(--border2);border-radius:3px;overflow:hidden;margin:6px 0;}
+.prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--purple2),var(--pink2));transition:width .5s ease;}
+</style>
+
+<!-- ===== SCREEN 1: WELCOME ===== -->
+<style>
+#s-welcome .card{padding:44px 40px;max-width:420px;width:100%;text-align:center;}
+.app-orb{width:88px;height:88px;margin:0 auto 18px;border-radius:50%;
+  background:linear-gradient(135deg,var(--purple2),var(--pink2));
+  display:flex;align-items:center;justify-content:center;font-size:2.4rem;
+  animation:float 3s ease-in-out infinite,pulse 2s ease-in-out infinite;
+  box-shadow:0 0 40px rgba(155,109,255,.4);}
+.app-title{font-family:'Cinzel',serif;font-size:2.2rem;font-weight:900;
+  background:linear-gradient(135deg,var(--purple),var(--pink),var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+.app-sub{font-size:.7rem;color:var(--dim);letter-spacing:3px;margin-bottom:24px;}
+.chars-row{display:flex;justify-content:center;gap:14px;margin-bottom:28px;}
+.char-orb{width:56px;height:56px;border-radius:50%;border:2px solid;
+  display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+  animation:float 3s ease-in-out infinite;}
+.char-orb:nth-child(2){animation-delay:.4s;}
+.char-orb:nth-child(3){animation-delay:.8s;}
+.auth-bar{display:flex;border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:22px;}
+.auth-tab{flex:1;padding:10px;background:transparent;border:none;cursor:pointer;
+  font-family:'Nunito',sans-serif;font-size:.78rem;font-weight:700;color:var(--dim);
+  letter-spacing:1px;transition:all .2s;}
+.auth-tab.active{background:rgba(155,109,255,.15);color:var(--white);}
+</style>
+
+<!-- ===== SCREEN 2: SETUP ===== -->
+<style>
+#s-setup .card{padding:40px;max-width:480px;width:100%;}
+.setup-title{font-family:'Cinzel',serif;font-size:1.3rem;color:var(--white);margin-bottom:4px;}
+.setup-sub{font-size:.68rem;color:var(--dim);letter-spacing:2px;margin-bottom:28px;}
+.api-hint{font-size:.63rem;color:var(--dim);line-height:1.7;margin-top:-6px;margin-bottom:16px;
+  padding:10px 14px;background:rgba(155,109,255,.05);border-left:2px solid var(--purple);border-radius:0 6px 6px 0;}
+.api-hint a{color:var(--purple);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.opt-card{padding:14px 10px;border:1px solid var(--border2);border-radius:10px;
+  cursor:pointer;text-align:center;transition:all .2s;background:rgba(8,6,20,.5);}
+.opt-card:hover{border-color:var(--purple2);}
+.opt-card.sel{border-color:var(--pink);background:rgba(255,110,180,.07);}
+.opt-card .ico{font-size:1.8rem;margin-bottom:6px;}
+.opt-card .nm{font-size:.75rem;color:var(--white);font-weight:700;}
+.opt-card .sub{font-size:.6rem;color:var(--dim);margin-top:2px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+</style>
+
+<!-- ===== SCREEN 3: UPLOAD ===== -->
+<style>
+#s-upload .card{padding:38px;max-width:560px;width:100%;}
+.drop-zone{border:2px dashed var(--border2);border-radius:14px;padding:44px 20px;
+  margin:20px 0;cursor:pointer;transition:all .3s;text-align:center;position:relative;}
+.drop-zone:hover,.drop-zone.over{border-color:var(--purple);background:rgba(155,109,255,.05);}
+.drop-ico{font-size:3.5rem;animation:float 2.5s ease-in-out infinite;margin-bottom:12px;}
+.drop-title{font-size:1.05rem;color:var(--white);font-weight:700;margin-bottom:6px;}
+.drop-hint{font-size:.72rem;color:var(--dim);}
+.drop-limit{font-size:.6rem;color:var(--purple);margin-top:6px;letter-spacing:1px;}
+.file-info-box{background:rgba(155,109,255,.08);border:1px solid var(--purple);
+  border-radius:8px;padding:14px;margin-bottom:18px;display:none;}
+.fi-name{color:var(--white);font-weight:700;font-size:.85rem;}
+.fi-size{font-size:.7rem;color:var(--dim);margin-top:3px;}
+.char-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;}
+.char-card{border:1px solid var(--border2);border-radius:12px;padding:18px 10px;
+  cursor:pointer;text-align:center;transition:all .3s;position:relative;}
+.char-card.sel{border-color:var(--pink);background:rgba(255,110,180,.07);transform:translateY(-3px);
+  box-shadow:0 8px 24px rgba(255,110,180,.2);}
+.char-card .ck{position:absolute;top:7px;right:7px;width:18px;height:18px;border-radius:50%;
+  background:var(--pink);display:none;align-items:center;justify-content:center;font-size:.55rem;color:#fff;}
+.char-card.sel .ck{display:flex;}
+.char-face2{font-size:2.6rem;margin-bottom:8px;}
+.char-nm{font-size:.78rem;color:var(--white);font-weight:700;margin-bottom:2px;}
+.char-rl{font-size:.6rem;color:var(--dim);}
+.section-title{font-family:'Cinzel',serif;font-size:1rem;color:var(--white);margin-bottom:14px;letter-spacing:2px;text-align:center;}
+</style>
+
+<!-- ===== SCREEN 4: NOVEL ===== -->
+<style>
+#s-novel{height:100vh;overflow:hidden;flex-direction:column;}
+.novel-hdr{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 20px;background:rgba(8,6,20,.97);border-bottom:1px solid var(--border);
+  flex-shrink:0;z-index:20;backdrop-filter:blur(10px);}
+.novel-docname{font-size:.7rem;color:var(--dim);max-width:180px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ntabs{display:flex;gap:4px;}
+.ntab{padding:6px 14px;border:1px solid var(--border2);background:transparent;
+  color:var(--dim);font-family:'Nunito',sans-serif;font-size:.62rem;font-weight:700;
+  letter-spacing:1px;cursor:pointer;border-radius:20px;transition:all .2s;}
+.ntab.active{background:linear-gradient(135deg,var(--purple2),var(--pink2));border-color:transparent;color:#fff;}
+.icon-btn{width:32px;height:32px;border:1px solid var(--border2);background:transparent;
+  border-radius:50%;color:var(--dim);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:.95rem;transition:all .2s;}
+.icon-btn:hover{border-color:var(--purple);color:var(--purple);}
+.novel-body{flex:1;display:flex;overflow:hidden;}
+
+/* VN STAGE */
+.vn-stage{flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;}
+.scene-bg{position:absolute;inset:0;
+  background:linear-gradient(180deg,#06041a 0%,#0b0828 40%,#140e38 70%,#1e1030 100%);}
+.scene-bg::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 90% 50% at 50% 0%,rgba(155,109,255,.12),transparent),
+    radial-gradient(ellipse 60% 30% at 15% 65%,rgba(255,110,180,.08),transparent),
+    radial-gradient(ellipse 50% 40% at 85% 75%,rgba(0,229,255,.06),transparent);}
+.petal{position:absolute;pointer-events:none;animation:fall linear infinite;opacity:.5;}
+@keyframes fall{0%{transform:translateY(-30px) rotate(0deg);opacity:.5}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+/* CHARACTERS */
+.chars-stage{position:absolute;bottom:210px;left:0;right:0;
+  display:flex;justify-content:space-around;align-items:flex-end;padding:0 40px;pointer-events:none;}
+.sprite{display:flex;flex-direction:column;align-items:center;
+  transition:all .5s ease;opacity:.4;transform:scale(.88);}
+.sprite.speaking{opacity:1;transform:scale(1);}
+.sprite.gone{opacity:0;transform:scale(.7) translateY(30px);}
+.sprite-face{font-size:5.5rem;transition:all .3s;
+  filter:drop-shadow(0 0 15px rgba(155,109,255,.3));
+  animation:breathe 3.5s ease-in-out infinite;}
+.sprite.speaking .sprite-face{filter:drop-shadow(0 0 25px rgba(255,110,180,.6));
+  animation:talkanim .5s ease-in-out infinite alternate;}
+@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes talkanim{0%{transform:translateY(0) scale(1)}100%{transform:translateY(-5px) scale(1.03)}}
+.sprite-tag{margin-top:8px;padding:4px 14px;border-radius:20px;font-size:.68rem;
+  font-weight:700;letter-spacing:1px;opacity:0;transition:opacity .3s;}
+.sprite.speaking .sprite-tag{opacity:1;}
+
+/* SUBTITLE */
+.sub-bar{position:absolute;bottom:210px;left:0;right:0;
+  text-align:center;padding:6px 60px;font-size:.78rem;
+  color:var(--yellow);text-shadow:0 0 8px rgba(255,214,10,.4);
+  background:rgba(8,6,20,.6);backdrop-filter:blur(4px);display:none;}
+
+/* DIALOGUE */
+.dlg-box{position:absolute;bottom:0;left:0;right:0;
+  background:rgba(8,6,20,.97);border-top:1px solid var(--border2);
+  padding:18px 22px 14px;min-height:205px;backdrop-filter:blur(12px);flex-shrink:0;}
+.dlg-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--purple),var(--pink),var(--cyan),transparent);}
+.dlg-speaker{font-family:'Cinzel',serif;font-size:.82rem;font-weight:600;
+  letter-spacing:2px;margin-bottom:8px;}
+.dlg-text{font-size:.9rem;line-height:1.85;color:var(--white);min-height:64px;}
+.cursor{display:inline-block;width:2px;height:1em;background:var(--pink);
+  vertical-align:middle;margin-left:2px;animation:blink .7s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.dlg-ctrl{display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px;}
+.dlg-btns{display:flex;gap:8px;}
+.dlg-btn{padding:6px 16px;border:1px solid var(--border2);background:transparent;
+  border-radius:20px;color:var(--dim);font-family:'Nunito',sans-serif;
+  font-size:.68rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.dlg-btn:hover{border-color:var(--purple);color:var(--purple);}
+.dlg-btn.main{background:linear-gradient(135deg,var(--purple2),var(--pink2));border-color:transparent;color:#fff;}
+.prog-dots{display:flex;gap:5px;align-items:center;}
+.pdot{width:6px;height:6px;border-radius:3px;background:var(--border2);transition:all .3s;}
+.pdot.cur{background:var(--pink);width:18px;}
+.pdot.done{background:var(--purple);}
+.voice-btns{display:flex;gap:6px;}
+.vbtn{padding:5px 12px;border:1px solid var(--border2);background:transparent;
+  border-radius:20px;color:var(--dim);font-size:.68rem;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:4px;}
+.vbtn.on{border-color:var(--green);color:var(--green);}
+
+/* SIDEBAR */
+.vn-side{width:310px;flex-shrink:0;background:rgba(12,9,28,.99);
+  border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.side-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.side-tab{flex:1;padding:10px 4px;background:transparent;border:none;
+  color:var(--dim);font-family:'Nunito',sans-serif;font-size:.58rem;
+  font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;
+  border-bottom:2px solid transparent;}
+.side-tab.active{color:var(--pink);border-bottom-color:var(--pink);}
+.side-body{flex:1;overflow-y:auto;padding:14px;}
+.side-body::-webkit-scrollbar{width:3px;}
+.side-body::-webkit-scrollbar-thumb{background:var(--border2);}
+.ch-item{padding:11px;border:1px solid var(--border);border-radius:8px;
+  margin-bottom:7px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:10px;}
+.ch-item:hover{border-color:var(--purple2);}
+.ch-item.active{border-color:var(--pink);background:rgba(255,110,180,.06);}
+.ch-num{width:26px;height:26px;border-radius:50%;background:var(--panel2);
+  display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:var(--purple);flex-shrink:0;}
+.ch-title{font-size:.73rem;color:var(--white);font-weight:600;}
+.ch-sum{font-size:.6rem;color:var(--dim);margin-top:2px;}
+.fc-card{background:var(--panel2);border:1px solid var(--border2);border-radius:10px;
+  padding:16px;margin-bottom:9px;cursor:pointer;transition:all .2s;}
+.fc-card:hover{border-color:var(--purple);transform:translateY(-1px);}
+.fc-q{font-size:.78rem;color:var(--white);font-weight:600;margin-bottom:8px;}
+.fc-a{font-size:.72rem;color:var(--text);display:none;border-top:1px solid var(--border);padding-top:8px;line-height:1.6;}
+.fc-card.open .fc-a{display:block;}
+.fc-hint{font-size:.58rem;color:var(--dim);margin-top:6px;}
+.chat-wrap{display:flex;flex-direction:column;height:100%;}
+.chat-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-bottom:10px;}
+.chat-msgs::-webkit-scrollbar{width:3px;}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--border2);}
+.cmsg{padding:10px 12px;border-radius:10px;font-size:.74rem;line-height:1.6;max-width:92%;animation:fadeIn .3s ease;}
+.cmsg.u{background:rgba(155,109,255,.12);border:1px solid rgba(155,109,255,.25);align-self:flex-end;color:var(--white);}
+.cmsg.a{background:rgba(255,110,180,.07);border:1px solid rgba(255,110,180,.18);align-self:flex-start;color:var(--text);}
+.cmsg .sndr{font-size:.58rem;font-weight:700;margin-bottom:3px;}
+.cmsg.u .sndr{color:var(--purple);}
+.cmsg.a .sndr{color:var(--pink);}
+.chat-row{display:flex;gap:7px;flex-shrink:0;margin-top:8px;}
+.chat-inp{flex:1;background:rgba(8,6,20,.9);border:1px solid var(--border2);border-radius:20px;
+  color:var(--white);font-family:'Nunito',sans-serif;font-size:.76rem;padding:8px 14px;outline:none;}
+.chat-inp:focus{border-color:var(--purple);}
+.chat-send{width:36px;height:36px;background:linear-gradient(135deg,var(--purple2),var(--pink2));
+  border:none;border-radius:50%;color:#fff;cursor:pointer;font-size:1rem;flex-shrink:0;}
+</style>
+
+<!-- ===== SCREEN 5: PUZZLE ===== -->
+<style>
+#s-puzzle{align-items:center;justify-content:center;padding:20px;min-height:100vh;}
+#s-puzzle .card{padding:36px;max-width:620px;width:100%;}
+.pz-hdr{display:flex;align-items:center;gap:16px;margin-bottom:22px;}
+.pz-char{font-size:3rem;}
+.pz-title{font-family:'Cinzel',serif;font-size:1rem;color:var(--white);}
+.pz-sub{font-size:.62rem;color:var(--dim);letter-spacing:2px;margin-top:2px;}
+.pz-score{font-family:'Cinzel',serif;font-size:1.6rem;color:var(--yellow);
+  text-shadow:0 0 15px rgba(255,214,10,.4);margin-left:auto;}
+.pz-q{font-size:.95rem;color:var(--white);line-height:1.75;
+  padding:18px;background:rgba(155,109,255,.06);border:1px solid rgba(155,109,255,.12);
+  border-radius:10px;margin-bottom:20px;}
+.pz-opts{display:flex;flex-direction:column;gap:9px;margin-bottom:18px;}
+.pz-opt{padding:13px 16px;border:1px solid var(--border2);border-radius:8px;cursor:pointer;
+  font-size:.84rem;color:var(--text);transition:all .2s;display:flex;align-items:center;gap:12px;}
+.pz-opt:hover:not(.locked){border-color:var(--purple);color:var(--white);background:rgba(155,109,255,.05);}
+.pz-opt.correct{border-color:var(--green)!important;background:rgba(0,230,118,.08)!important;color:var(--green)!important;}
+.pz-opt.wrong{border-color:var(--red)!important;background:rgba(255,23,68,.08)!important;color:var(--red)!important;}
+.pz-opt.locked{cursor:default;}
+.opt-lt{width:28px;height:28px;border-radius:50%;background:var(--panel2);
+  display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;flex-shrink:0;}
+.pz-fb{padding:14px;border-radius:8px;font-size:.8rem;line-height:1.65;margin-bottom:14px;display:none;}
+.pz-fb.ok{background:rgba(0,230,118,.07);border:1px solid var(--green);color:var(--green);}
+.pz-fb.bad{background:rgba(255,23,68,.07);border:1px solid var(--red);color:var(--text);}
+.pz-nav{display:flex;justify-content:space-between;align-items:center;}
+</style>
+
+<!-- ===== SCREEN 6: NOTES ===== -->
+<style>
+#s-notes{padding:24px;overflow-y:auto;}
+.notes-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.notes-title{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--white);}
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
+.note-card{background:var(--panel);border:1px solid var(--border2);border-radius:12px;
+  padding:20px;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;}
+.note-card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(155,109,255,.18);}
+.note-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--purple),var(--pink));}
+.nc-title{font-size:.85rem;color:var(--white);font-weight:700;margin-bottom:5px;}
+.nc-prev{font-size:.7rem;color:var(--dim);line-height:1.6;}
+.nc-date{font-size:.58rem;color:var(--dim);margin-top:10px;}
+
+/* LOADING */
+.loading-ov{position:fixed;inset:0;z-index:900;background:rgba(8,6,20,.97);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.ld-chars{display:flex;gap:20px;margin-bottom:6px;}
+.ld-char{font-size:3rem;animation:bounce 1s ease-in-out infinite;}
+.ld-char:nth-child(2){animation-delay:.2s;}
+.ld-char:nth-child(3){animation-delay:.4s;}
+.ld-title{font-family:'Cinzel',serif;font-size:1rem;color:var(--white);letter-spacing:3px;}
+.ld-msg{font-size:.7rem;color:var(--dim);min-height:20px;}
+.ld-bar-wrap{width:220px;height:4px;background:var(--border2);border-radius:2px;overflow:hidden;}
+.ld-bar{height:100%;width:0%;border-radius:2px;
+  background:linear-gradient(90deg,var(--purple2),var(--pink2),var(--cyan));
+  background-size:200% 100%;
+  animation:gradMove 1.5s linear infinite;}
+</style>
+</head>
+<body>
+<div class="bg-fx"></div>
+<div class="stars"></div>
+<div id="petals"></div>
+
+<!-- LOADING -->
+<div class="loading-ov hidden" id="ldOv">
+  <div class="ld-chars"><div class="ld-char" id="lc1">🌸</div><div class="ld-char" id="lc2">📚</div><div class="ld-char" id="lc3">✨</div></div>
+  <div class="ld-title">ANALYZING DOCUMENT</div>
+  <div class="ld-msg" id="ldMsg">Reading your file...</div>
+  <div class="ld-bar-wrap"><div class="ld-bar" id="ldBar"></div></div>
+</div>
+
+<!-- ════ S1: WELCOME ════ -->
+<div class="screen center-screen active" id="s-welcome">
+  <div class="card" style="padding:44px 40px;max-width:420px;width:100%;text-align:center;">
+    <div class="app-orb">📖</div>
+    <div class="app-title">StudyAI</div>
+    <div class="app-sub">YOUR ANIME STUDY COMPANION</div>
+    <div class="chars-row">
+      <div class="char-orb" style="border-color:#ff6eb4;background:rgba(255,110,180,.1);">🌸</div>
+      <div class="char-orb" style="border-color:#9b6dff;background:rgba(155,109,255,.1);">⚡</div>
+      <div class="char-orb" style="border-color:#00e5ff;background:rgba(0,229,255,.1);">🔮</div>
+    </div>
+    <div class="auth-bar">
+      <button class="auth-tab active" id="tab-login" onclick="authTab('login')">LOGIN</button>
+      <button class="auth-tab" id="tab-reg" onclick="authTab('reg')">REGISTER</button>
+    </div>
+    <div id="frm-login">
+      <input class="inp" id="l-user" placeholder="Username" />
+      <input class="inp" id="l-pass" type="password" placeholder="Password" />
+      <button class="btn btn-grad" onclick="doLogin()">▶ LOGIN</button>
+      <div style="margin-top:10px;"></div>
+    </div>
+    <div id="frm-reg" class="hidden">
+      <input class="inp" id="r-name" placeholder="Your name" />
+      <input class="inp" id="r-user" placeholder="Username" />
+      <input class="inp" id="r-pass" type="password" placeholder="Password (min 6 chars)" />
+      <button class="btn btn-grad" onclick="doReg()">✨ CREATE ACCOUNT</button>
+      <div style="margin-top:10px;"></div>
+    </div>
+    <button class="btn-outline" onclick="goSetup()">Continue as Guest →</button>
+    <div class="err-msg" id="auth-err" style="color:#ff4d6d;font-size:.72rem;margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- ════ S2: SETUP ════ -->
+<div class="screen center-screen" id="s-setup">
+  <div class="card" style="padding:40px;max-width:500px;width:100%;">
+    <div class="setup-title">⚙️ SETUP</div>
+    <div class="setup-sub">Configure your AI study companion</div>
+    <label class="lbl">GEMINI API KEY (FREE)</label>
+    <input class="inp" type="password" id="gemKey" placeholder="AIzaSy..." />
+    <div class="api-hint">Get your free key at <strong style="color:var(--purple);">aistudio.google.com</strong> → Get API Key. No billing required!</div>
+    <label class="lbl">LANGUAGE</label>
+    <div class="grid2">
+      <div class="opt-card sel" id="lang-en" onclick="setLang('en',this)">
+        <div class="ico">🇬🇧</div><div class="nm">English</div><div class="sub">English</div>
+      </div>
+      <div class="opt-card" id="lang-te" onclick="setLang('te',this)">
+        <div class="ico">🇮🇳</div><div class="nm">Telugu</div><div class="sub" style="font-family:'Noto Sans Telugu',sans-serif;">తెలుగు</div>
+      </div>
+    </div>
+    <label class="lbl">DIFFICULTY</label>
+    <div class="grid3">
+      <div class="opt-card" onclick="setDiff('beginner',this)"><div class="ico">🌱</div><div class="nm">BEGINNER</div></div>
+      <div class="opt-card sel" onclick="setDiff('intermediate',this)"><div class="ico">⚡</div><div class="nm">INTERMEDIATE</div></div>
+      <div class="opt-card" onclick="setDiff('expert',this)"><div class="ico">🔥</div><div class="nm">EXPERT</div></div>
+    </div>
+    <label class="lbl">VOICE GENDER (AI narration)</label>
+    <div class="grid2" style="margin-bottom:20px;">
+      <div class="opt-card sel" onclick="setVoiceG('female',this)"><div class="ico">👩</div><div class="nm">FEMALE</div></div>
+      <div class="opt-card" onclick="setVoiceG('male',this)"><div class="ico">👨</div><div class="nm">MALE</div></div>
+    </div>
+    <button class="btn btn-grad" onclick="goUpload()">NEXT →</button>
+  </div>
+</div>
+
+<!-- ════ S3: UPLOAD ════ -->
+<div class="screen center-screen" id="s-upload">
+  <div class="card" style="padding:36px;max-width:560px;width:100%;text-align:center;">
+    <div class="setup-title">📂 UPLOAD DOCUMENT</div>
+    <div class="drop-zone" id="dropZone"
+      onclick="document.getElementById('fileInp').click()"
+      ondragover="event.preventDefault();this.classList.add('over')"
+      ondragleave="this.classList.remove('over')"
+      ondrop="onDrop(event)">
+      <div class="drop-ico">📄</div>
+      <div class="drop-title">Drop your file here or click to browse</div>
+      <div class="drop-hint">PDF · TXT · DOCX · MD supported</div>
+      <div class="drop-limit">MAX 1GB</div>
+    </div>
+    <input type="file" id="fileInp" accept=".pdf,.txt,.docx,.doc,.md" class="hidden" onchange="onFile(this.files[0])">
+    <div class="file-info-box" id="fib">
+      <div class="fi-name" id="fi-name">—</div>
+      <div class="fi-size" id="fi-size">—</div>
+    </div>
+    <div class="section-title">CHOOSE YOUR COMPANIONS</div>
+    <div class="char-grid">
+      <div class="char-card sel" onclick="toggleChar(0,this)">
+        <div class="ck">✓</div><div class="char-face2">🌸</div>
+        <div class="char-nm">Sakura</div><div class="char-rl">Gentle Teacher</div>
+      </div>
+      <div class="char-card sel" onclick="toggleChar(1,this)">
+        <div class="ck">✓</div><div class="char-face2">⚡</div>
+        <div class="char-nm">Riku</div><div class="char-rl">Energetic Explainer</div>
+      </div>
+      <div class="char-card" onclick="toggleChar(2,this)">
+        <div class="ck">✓</div><div class="char-face2">🔮</div>
+        <div class="char-nm">Luna</div><div class="char-rl">Wise Analyst</div>
+      </div>
+    </div>
+    <button class="btn btn-grad" id="startBtn" onclick="startStudy()" disabled>✨ BEGIN STUDY SESSION</button>
+  </div>
+</div>
+
+<!-- ════ S4: NOVEL ════ -->
+<div class="screen" id="s-novel">
+  <div class="novel-hdr">
+    <div class="novel-docname" id="novDocName">📄 Document</div>
+    <div class="ntabs">
+      <button class="ntab active" onclick="ntab('story',this)">📖 STORY</button>
+      <button class="ntab" onclick="ntab('puzzle',this)">🧩 PUZZLE</button>
+      <button class="ntab" onclick="ntab('notes',this)">💾 NOTES</button>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <button class="icon-btn" title="Export" onclick="doExport()">📤</button>
+      <button class="icon-btn" title="Help" onclick="showHelp()">❓</button>
+      <button class="icon-btn" title="Home" onclick="goHome()">🏠</button>
+    </div>
+  </div>
+  <div class="novel-body">
+    <!-- VN STAGE -->
+    <div class="vn-stage">
+      <div class="scene-bg"></div>
+      <div class="chars-stage" id="charStage"></div>
+      <div class="sub-bar" id="subBar"></div>
+      <div class="dlg-box">
+        <div class="dlg-speaker" id="dlgSpk">—</div>
+        <div class="dlg-text" id="dlgTxt"><span class="cursor"></span></div>
+        <div class="dlg-ctrl">
+          <div class="dlg-btns">
+            <button class="dlg-btn" onclick="prevScene()">◀ PREV</button>
+            <button class="dlg-btn main" onclick="nextScene()">NEXT ▶</button>
+            <button class="dlg-btn" onclick="replayVoice()">🔊</button>
+          </div>
+          <div class="prog-dots" id="progDots"></div>
+          <div class="voice-btns">
+            <button class="vbtn on" id="vBtn" onclick="toggleVoice()">🔊 VOICE</button>
+            <button class="vbtn on" id="sBtn" onclick="toggleSubs()">💬 SUBS</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- SIDEBAR -->
+    <div class="vn-side">
+      <div class="side-tabs">
+        <button class="side-tab active" onclick="sideTab('ch',this)">CHAPTERS</button>
+        <button class="side-tab" onclick="sideTab('fc',this)">FLASHCARDS</button>
+        <button class="side-tab" onclick="sideTab('qa',this)">ASK AI</button>
+      </div>
+      <div class="side-body" id="st-ch"><div id="chList"></div>
+        <div style="margin-top:14px;">
+          <div class="lbl">STUDY PROGRESS</div>
+          <div class="prog-wrap"><div class="prog-fill" id="studProg" style="width:0%"></div></div>
+          <div style="font-size:.62rem;color:var(--dim);text-align:right;" id="studPct">0%</div>
+        </div>
+      </div>
+      <div class="side-body hidden" id="st-fc"><div id="fcList"></div></div>
+      <div class="side-body hidden" id="st-qa" style="flex-direction:column;height:100%;">
+        <div class="chat-wrap">
+          <div class="chat-msgs" id="chatMsgs">
+            <div class="cmsg a"><div class="sndr">🌸 Sakura</div>Ask me anything about your document! ✨</div>
+          </div>
+          <div class="chat-row">
+            <input class="chat-inp" id="chatInp" placeholder="Ask a question..." onkeydown="if(event.key==='Enter')sendChat()" />
+            <button class="chat-send" onclick="sendChat()">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S5: PUZZLE ════ -->
+<div class="screen center-screen" id="s-puzzle">
+  <div style="position:absolute;top:16px;left:16px;z-index:10;">
+    <button class="dlg-btn" onclick="showScreen('s-novel')">← BACK</button>
+  </div>
+  <div class="card" style="padding:36px;max-width:620px;width:100%;">
+    <div class="pz-hdr">
+      <div class="pz-char" id="pzChar">🧩</div>
+      <div class="pz-meta">
+        <div class="pz-title">CHALLENGE TIME!</div>
+        <div class="pz-sub" id="pzSub">Question 1 of 5</div>
+      </div>
+      <div class="pz-score" id="pzScore">0 ⭐</div>
+    </div>
+    <div class="prog-wrap" style="margin-bottom:18px;"><div class="prog-fill" id="pzProg" style="width:0%"></div></div>
+    <div class="pz-q" id="pzQ">Loading...</div>
+    <div class="pz-opts" id="pzOpts"></div>
+    <div class="pz-fb" id="pzFb"></div>
+    <div class="pz-nav">
+      <button class="dlg-btn" onclick="skipPuzzle()">SKIP</button>
+      <button class="dlg-btn main hidden" id="nxtPzBtn" onclick="nextPuzzle()">NEXT →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S6: NOTES ════ -->
+<div class="screen" id="s-notes">
+  <div class="notes-hdr">
+    <div class="notes-title">💾 Saved Notes</div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-sm btn-cyan" onclick="exportAll()">📤 Export All</button>
+      <button class="dlg-btn" onclick="showScreen('s-novel')">← BACK</button>
+    </div>
+  </div>
+  <div class="notes-grid" id="notesGrid"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════
+const A = {
+  // auth
+  users: JSON.parse(localStorage.getItem('sai_users')||'[]'),
+  me: null,
+  // config
+  gemKey:'', lang:'en', diff:'intermediate', voiceGender:'female',
+  // upload
+  selChars:[0,1],
+  docName:'', docText:'', docB64:'', docMime:'',
+  // content
+  scenes:[], chapters:[], flashcards:[], puzzles:[],
+  // playback
+  curScene:0, voiceOn:true, subsOn:true,
+  // puzzle
+  curPz:0, pzScore:0,
+  // notes
+  notes: JSON.parse(localStorage.getItem('sai_notes')||'[]'),
+  // chars
+  chars:[
+    {name:'Sakura',emoji:'🌸',color:'#ff6eb4',voice:'female',persona:'gentle and encouraging teacher'},
+    {name:'Riku',  emoji:'⚡',color:'#9b6dff',voice:'male',  persona:'energetic and enthusiastic explainer'},
+    {name:'Luna',  emoji:'🔮',color:'#00e5ff',voice:'female',persona:'wise and analytical thinker'},
+  ]
+};
+
+// ══════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════
+const $=id=>document.getElementById(id);
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');}
+function err(id,msg){const el=$(id);if(el){el.textContent=msg;setTimeout(()=>el.textContent='',3000);}}
+
+// Petals
+(function(){const c=$('petals'),e=['🌸','✨','⭐','💫','🌺'];
+  for(let i=0;i<14;i++){const p=document.createElement('div');p.className='petal';
+    p.textContent=e[Math.floor(Math.random()*e.length)];
+    p.style.cssText=`left:${Math.random()*100}%;font-size:${.6+Math.random()*.9}rem;
+      animation-duration:${7+Math.random()*9}s;animation-delay:${-Math.random()*12}s;`;
+    c.appendChild(p);}})();
+
+// ══════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════
+function authTab(t){
+  $('tab-login').classList.toggle('active',t==='login');
+  $('tab-reg').classList.toggle('active',t==='reg');
+  $('frm-login').classList.toggle('hidden',t!=='login');
+  $('frm-reg').classList.toggle('hidden',t!=='reg');
+}
+
+function doLogin(){
+  const u=$('l-user').value.trim(), p=$('l-pass').value;
+  if(!u||!p){err('auth-err','Fill all fields');return;}
+  const found=A.users.find(x=>x.u===u&&x.p===p);
+  if(!found){err('auth-err','Wrong credentials!');return;}
+  A.me=found; goSetup();
+}
+
+function doReg(){
+  const name=$('r-name').value.trim(),u=$('r-user').value.trim(),p=$('r-pass').value;
+  if(!name||!u||p.length<6){err('auth-err','Fill all fields. Password min 6 chars.');return;}
+  if(A.users.find(x=>x.u===u)){err('auth-err','Username taken!');return;}
+  const usr={name,u,p};A.users.push(usr);
+  localStorage.setItem('sai_users',JSON.stringify(A.users));
+  A.me=usr; goSetup();
+}
+
+function goSetup(){showScreen('s-setup');}
+
+// ══════════════════════════════════════
+//  SETUP
+// ══════════════════════════════════════
+function setLang(l,el){A.lang=l;
+  document.querySelectorAll('[id^="lang-"]').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');}
+
+function setDiff(d,el){A.diff=d;
+  el.closest('.grid3').querySelectorAll('.opt-card').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');}
+
+function setVoiceG(g,el){A.voiceGender=g;
+  el.closest('.grid2').querySelectorAll('.opt-card').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');}
+
+function goUpload(){
+  A.gemKey=$('gemKey').value.trim();
+  if(!A.gemKey){alert('Please enter your Gemini API key!\nGet it free at aistudio.google.com');return;}
+  showScreen('s-upload');
+}
+
+// ══════════════════════════════════════
+//  UPLOAD
+// ══════════════════════════════════════
+function onDrop(e){
+  e.preventDefault();$('dropZone').classList.remove('over');
+  if(e.dataTransfer.files[0])onFile(e.dataTransfer.files[0]);
+}
+
+function onFile(f){
+  if(!f)return;
+  const MB=f.size/1024/1024;
+  if(f.size>1024*1024*1024){alert('File too large! Max 1GB.');return;}
+  A.docName=f.name;
+  $('fi-name').textContent='📄 '+f.name;
+  $('fi-size').textContent=MB<1?f.size+' B':MB<1024?MB.toFixed(1)+' MB':(MB/1024).toFixed(2)+' GB';
+  $('fib').style.display='block';
+  $('startBtn').disabled=false;
+
+  if(f.name.toLowerCase().endsWith('.pdf')){
+    const r=new FileReader();
+    r.onload=e=>{A.docB64=e.target.result.split(',')[1];A.docMime='application/pdf';A.docText='[PDF]';};
+    r.readAsDataURL(f);
+  } else {
+    const r=new FileReader();
+    r.onload=e=>A.docText=e.target.result;
+    r.readAsText(f);
+  }
+}
+
+function toggleChar(i,el){
+  if(A.selChars.includes(i)){
+    if(A.selChars.length<=1)return;
+    A.selChars=A.selChars.filter(x=>x!==i);el.classList.remove('sel');
+  } else {
+    if(A.selChars.length>=3)return;
+    A.selChars.push(i);el.classList.add('sel');
+  }
+}
+
+// ══════════════════════════════════════
+//  GEMINI API
+// ══════════════════════════════════════
+async function gemini(prompt){
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${A.gemKey}`;
+  const parts=[];
+  if(A.docB64)parts.push({inline_data:{mime_type:A.docMime,data:A.docB64}});
+  parts.push({text:prompt});
+  const res=await fetch(url,{method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:.7,maxOutputTokens:8192}})});
+  const d=await res.json();
+  if(!res.ok)throw new Error(d.error?.message||'Gemini error '+res.status);
+  return d.candidates?.[0]?.content?.parts?.[0]?.text||'';
+}
+
+// ══════════════════════════════════════
+//  START STUDY
+// ══════════════════════════════════════
+async function startStudy(){
+  showLoading(true,'Reading your document...');
+  try{
+    await generateAll();
+    buildStage();
+    renderChapters();
+    renderFlashcards();
+    $('novDocName').textContent='📄 '+A.docName;
+    showLoading(false);
+    showScreen('s-novel');
+    playScene(0);
+  }catch(e){
+    showLoading(false);
+    alert('AI Error: '+e.message+'\n\nPlease check your Gemini API key and try again!');
+  }
+}
+
+async function generateAll(){
+  const chars=A.selChars.map(i=>A.chars[i]);
+  const cNames=chars.map(c=>c.name).join(', ');
+  const doc=A.docText.length>10000?A.docText.slice(0,10000)+'...[truncated]':A.docText;
+
+  const diffMap={beginner:'Use very simple language, relatable analogies, avoid all jargon.',
+    intermediate:'Clear explanations, introduce key terms with definitions.',
+    expert:'Technical depth, assume domain knowledge, discuss nuances.'};
+  const langStr=A.lang==='te'?'Respond in Telugu (తెలుగు) only.':'Respond in English.';
+
+  ldMsg('Gemini AI is reading your document...');
+
+  const prompt=`You are creating an ANIME VISUAL NOVEL study experience. Analyze this document and create educational content.
+
+DOCUMENT:
+"""
+${doc}
+"""
+
+CHARACTERS (each must speak multiple times):
+${chars.map(c=>`- ${c.name}: ${c.persona}`).join('\n')}
+
+LANGUAGE: ${langStr}
+DIFFICULTY: ${diffMap[A.diff]}
+
+Return ONLY valid JSON (no markdown, no backticks, no extra text):
+{
+  "chapters": [
+    {"title":"...", "summary":"..."}
+  ],
+  "scenes": [
+    {"chapter":0,"speaker":"CharacterName","text":"Engaging educational dialogue 2-4 sentences. Characters reference each other by name and react naturally.","example":"Optional real-world analogy or example"}
+  ],
+  "flashcards": [
+    {"question":"Key concept question","answer":"Clear concise answer"}
+  ],
+  "puzzles": [
+    {"question":"Quiz question","options":["A","B","C","D"],"correct":0,"explanation":"Why this is correct"}
+  ]
+}
+
+Requirements:
+- 3-5 chapters covering main document sections
+- 15-22 scenes (characters alternate, build on each other, use expressions like "Oh!", "Wait—", "Exactly!")
+- 8-10 flashcards on key concepts
+- 6-8 puzzle questions with 4 options each
+- Make dialogue feel like anime: characters show personality, react, encourage the reader`;
+
+  const raw=await gemini(prompt);
+  ldMsg('Building your visual novel...');
+
+  // Extract JSON robustly
+  let jsonStr=raw;
+  const m=raw.match(/\{[\s\S]*\}/);
+  if(m)jsonStr=m[0];
+
+  let data;
+  try{data=JSON.parse(jsonStr);}
+  catch(e){throw new Error('AI returned invalid format. Try again.');}
+
+  A.chapters=data.chapters||[];
+  A.scenes=data.scenes||[];
+  A.flashcards=data.flashcards||[];
+  A.puzzles=data.puzzles||[];
+
+  // Save note
+  const note={id:Date.now(),title:A.docName,
+    preview:A.chapters.map(c=>c.title).join(' · ')||'Study session',
+    date:new Date().toLocaleDateString(),
+    chapters:A.chapters,flashcards:A.flashcards,
+    sceneSummary:A.scenes.length+' scenes generated'};
+  A.notes.unshift(note);
+  if(A.notes.length>20)A.notes.pop();
+  localStorage.setItem('sai_notes',JSON.stringify(A.notes));
+}
+
+// ══════════════════════════════════════
+//  VISUAL NOVEL
+// ══════════════════════════════════════
+function buildStage(){
+  const stage=$('charStage');stage.innerHTML='';
+  A.selChars.forEach(ci=>{
+    const c=A.chars[ci],div=document.createElement('div');
+    div.className='sprite gone';div.id='sp-'+ci;
+    div.innerHTML=`<div class="sprite-face">${c.emoji}</div>
+      <div class="sprite-tag" style="background:${c.color}22;border:1px solid ${c.color};color:${c.color};">${c.name}</div>`;
+    stage.appendChild(div);
+  });
+}
+
+let typer=null;
+
+function playScene(idx){
+  if(idx<0||idx>=A.scenes.length)return;
+  A.curScene=idx;
+  const sc=A.scenes[idx];
+  const char=A.chars.find(c=>c.name===sc.speaker)||A.chars[A.selChars[0]];
+
+  // Sprites
+  A.selChars.forEach(ci=>{
+    const sp=$('sp-'+ci);if(!sp)return;
+    sp.className='sprite';
+    if(A.chars[ci].name===sc.speaker)sp.classList.add('speaking');
+  });
+
+  // Speaker
+  $('dlgSpk').textContent=sc.speaker;
+  $('dlgSpk').style.color=char.color;
+
+  // Typewriter
+  if(typer)clearInterval(typer);
+  window.speechSynthesis&&window.speechSynthesis.cancel();
+  const full=sc.text+(sc.example?'\n\n💡 Example: '+sc.example:'');
+  $('dlgTxt').innerHTML='<span class="cursor"></span>';
+  let i=0;
+  typer=setInterval(()=>{
+    if(i<full.length){$('dlgTxt').innerHTML=full.slice(0,++i)+'<span class="cursor"></span>';}
+    else{clearInterval(typer);$('dlgTxt').innerHTML=full;}
+  },22);
+
+  // Subtitles
+  if(A.subsOn){$('subBar').style.display='block';$('subBar').textContent=sc.speaker+': '+sc.text;}
+  else $('subBar').style.display='none';
+
+  // Voice
+  if(A.voiceOn)speak(sc.text,char.voice||A.voiceGender);
+
+  // Progress
+  const pct=Math.round((idx+1)/A.scenes.length*100);
+  $('studProg').style.width=pct+'%';
+  $('studPct').textContent=pct+'%';
+
+  updateDots();
+  updateChapterHighlight(sc.chapter||0);
+}
+
+function nextScene(){
+  if(A.curScene<A.scenes.length-1)playScene(A.curScene+1);
+  else{if(confirm('🎉 Story complete!\nReady for the PUZZLE CHALLENGE?'))goPuzzle();}
+}
+
+function prevScene(){if(A.curScene>0)playScene(A.curScene-1);}
+
+function updateDots(){
+  const dots=$('progDots');dots.innerHTML='';
+  const max=Math.min(A.scenes.length,12);
+  for(let i=0;i<max;i++){
+    const si=Math.floor(i*A.scenes.length/max);
+    const d=document.createElement('div');
+    d.className='pdot'+(si===A.curScene?' cur':si<A.curScene?' done':'');
+    dots.appendChild(d);
+  }
+}
+
+function updateChapterHighlight(ch){
+  document.querySelectorAll('.ch-item').forEach((el,i)=>el.classList.toggle('active',i===ch));
+}
+
+// ══════════════════════════════════════
+//  VOICE
+// ══════════════════════════════════════
+function speak(text,gender){
+  if(!window.speechSynthesis||!A.voiceOn)return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang=A.lang==='te'?'te-IN':'en-US';
+  u.rate=0.92;u.pitch=gender==='female'?1.15:0.82;
+  const vs=window.speechSynthesis.getVoices();
+  const v=vs.find(v=>v.lang.startsWith(A.lang==='te'?'te':'en')&&
+    (gender==='female'?/female|samantha|victoria|karen/i.test(v.name):/male|daniel|alex|google uk/i.test(v.name)));
+  if(v)u.voice=v;
+  window.speechSynthesis.speak(u);
+}
+
+function toggleVoice(){
+  A.voiceOn=!A.voiceOn;
+  $('vBtn').classList.toggle('on',A.voiceOn);
+  $('vBtn').textContent=A.voiceOn?'🔊 VOICE':'🔇 VOICE';
+  if(!A.voiceOn)window.speechSynthesis&&window.speechSynthesis.cancel();
+}
+
+function toggleSubs(){
+  A.subsOn=!A.subsOn;
+  $('sBtn').classList.toggle('on',A.subsOn);
+  $('subBar').style.display=A.subsOn?'block':'none';
+}
+
+function replayVoice(){
+  const sc=A.scenes[A.curScene];if(!sc)return;
+  const c=A.chars.find(x=>x.name===sc.speaker);
+  speak(sc.text,c?.voice||A.voiceGender);
+}
+
+// ══════════════════════════════════════
+//  CHAPTERS & FLASHCARDS
+// ══════════════════════════════════════
+function renderChapters(){
+  $('chList').innerHTML=A.chapters.map((ch,i)=>`
+    <div class="ch-item" onclick="jumpCh(${i})">
+      <div class="ch-num">${i+1}</div>
+      <div><div class="ch-title">${ch.title}</div><div class="ch-sum">${ch.summary||''}</div></div>
+    </div>`).join('');
+}
+
+function jumpCh(i){
+  const idx=A.scenes.findIndex(s=>(s.chapter||0)===i);
+  if(idx>=0)playScene(idx);
+}
+
+function renderFlashcards(){
+  $('fcList').innerHTML=A.flashcards.map((fc,i)=>`
+    <div class="fc-card" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Q${i+1}: ${fc.question}</div>
+      <div class="fc-a">✅ ${fc.answer}</div>
+      <div class="fc-hint">Tap to reveal answer</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════
+//  SIDEBAR TABS
+// ══════════════════════════════════════
+function sideTab(t,el){
+  document.querySelectorAll('.side-tab').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  $('st-ch').classList.add('hidden');
+  $('st-fc').classList.add('hidden');
+  $('st-qa').classList.add('hidden');
+  $('st-qa').style.display='none';
+  if(t==='ch')$('st-ch').classList.remove('hidden');
+  else if(t==='fc')$('st-fc').classList.remove('hidden');
+  else{$('st-qa').classList.remove('hidden');$('st-qa').style.display='flex';}
+}
+
+function ntab(t,el){
+  document.querySelectorAll('.ntab').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  if(t==='puzzle')goPuzzle();
+  else if(t==='notes'){renderNotes();showScreen('s-notes');}
+}
+
+// ══════════════════════════════════════
+//  Q&A CHAT
+// ══════════════════════════════════════
+async function sendChat(){
+  const inp=$('chatInp'),q=inp.value.trim();
+  if(!q)return;
+  inp.value='';
+  addMsg('u','You',q);
+  addMsg('a','⌛','Thinking...');
+  try{
+    const doc=A.docText.length>5000?A.docText.slice(0,5000):A.docText;
+    const p=`Document content:\n"""${doc}"""\n\nUser question: ${q}\n\nAnswer clearly and concisely in ${A.lang==='te'?'Telugu':'English'}. Keep it under 4 sentences.`;
+    const ans=await gemini(p);
+    $('chatMsgs').removeChild($('chatMsgs').lastChild);
+    const char=A.chars[A.selChars[0]];
+    addMsg('a',char.emoji+' '+char.name,ans);
+    if(A.voiceOn)speak(ans,char.voice);
+  }catch(e){
+    $('chatMsgs').removeChild($('chatMsgs').lastChild);
+    addMsg('a','❌','Error: '+e.message);
+  }
+}
+
+function addMsg(type,sndr,txt){
+  const d=document.createElement('div');d.className='cmsg '+type;
+  d.innerHTML=`<div class="sndr">${sndr}</div>${txt}`;
+  $('chatMsgs').appendChild(d);
+  $('chatMsgs').scrollTop=99999;
+}
+
+// ══════════════════════════════════════
+//  PUZZLES
+// ══════════════════════════════════════
+function goPuzzle(){
+  if(!A.puzzles.length){alert('No puzzles yet! Upload a document first.');return;}
+  A.curPz=0;A.pzScore=0;
+  showScreen('s-puzzle');loadPuzzle();
+}
+
+function loadPuzzle(){
+  if(A.curPz>=A.puzzles.length){endPuzzle();return;}
+  const p=A.puzzles[A.curPz];
+  const ci=A.selChars[A.curPz%A.selChars.length];
+  const char=A.chars[ci];
+  $('pzChar').textContent=char.emoji;
+  $('pzSub').textContent=`Question ${A.curPz+1} of ${A.puzzles.length}`;
+  $('pzScore').textContent=A.pzScore+' ⭐';
+  $('pzProg').style.width=(A.curPz/A.puzzles.length*100)+'%';
+  $('pzQ').textContent=p.question;
+  $('pzFb').style.display='none';$('pzFb').className='pz-fb';
+  $('nxtPzBtn').classList.add('hidden');
+  const ltrs=['A','B','C','D'];
+  $('pzOpts').innerHTML=p.options.map((o,i)=>`
+    <div class="pz-opt" id="pzo-${i}" onclick="answerPz(${i})">
+      <div class="opt-lt">${ltrs[i]}</div>${o}
+    </div>`).join('');
+  if(A.voiceOn)speak(p.question,char.voice);
+}
+
+function answerPz(i){
+  const p=A.puzzles[A.curPz];
+  document.querySelectorAll('.pz-opt').forEach(o=>{o.classList.add('locked');o.onclick=null;});
+  const ok=i===p.correct;
+  $('pzo-'+i).classList.add(ok?'correct':'wrong');
+  if(!ok)$('pzo-'+p.correct).classList.add('correct');
+  if(ok)A.pzScore++;
+  const fb=$('pzFb');
+  fb.className='pz-fb '+(ok?'ok':'bad');
+  fb.innerHTML=(ok?'✅ Correct! ':'❌ Wrong. ')+p.explanation;
+  fb.style.display='block';
+  $('nxtPzBtn').classList.remove('hidden');
+  if(A.voiceOn)speak(ok?'Correct! Well done!':'Not quite. '+p.explanation,A.voiceGender);
+}
+
+function nextPuzzle(){A.curPz++;loadPuzzle();}
+function skipPuzzle(){A.curPz++;loadPuzzle();}
+
+function endPuzzle(){
+  const pct=Math.round(A.pzScore/A.puzzles.length*100);
+  const medal=pct>=80?'🏆':pct>=60?'⭐':'📚';
+  const msg=pct>=80?'Excellent!':pct>=60?'Good job!':'Keep studying!';
+  $('pzQ').innerHTML=`<div style="text-align:center;padding:10px;">
+    <div style="font-size:3.5rem;margin-bottom:12px;">${medal}</div>
+    <div style="font-family:'Cinzel',serif;font-size:1.6rem;color:var(--yellow);">${A.pzScore}/${A.puzzles.length}</div>
+    <div style="font-size:.8rem;color:var(--text);margin-top:6px;">${msg} Score: ${pct}%</div>
+  </div>`;
+  $('pzOpts').innerHTML='';
+  $('pzFb').style.display='none';
+  $('nxtPzBtn').classList.add('hidden');
+  if(A.voiceOn)speak(`${msg} You scored ${A.pzScore} out of ${A.puzzles.length}!`,A.voiceGender);
+}
+
+// ══════════════════════════════════════
+//  NOTES
+// ══════════════════════════════════════
+function renderNotes(){
+  const g=$('notesGrid');
+  if(!A.notes.length){g.innerHTML='<div style="color:var(--dim);grid-column:1/-1;text-align:center;padding:40px;font-size:.8rem;">No saved notes yet.<br>Upload a document to start!</div>';return;}
+  g.innerHTML=A.notes.map(n=>`
+    <div class="note-card">
+      <div class="nc-title">📄 ${n.title}</div>
+      <div class="nc-prev">${n.preview||''}</div>
+      <div style="font-size:.65rem;color:var(--purple);margin-top:6px;">${n.sceneSummary||''}</div>
+      <div class="nc-date">🕐 ${n.date}</div>
+    </div>`).join('');
+}
+
+function doExport(){
+  const d={document:A.docName,date:new Date().toISOString(),chapters:A.chapters,
+    scenes:A.scenes.map(s=>({speaker:s.speaker,text:s.text,example:s.example||''})),
+    flashcards:A.flashcards,puzzles:A.puzzles.map(p=>({q:p.question,correct:p.options[p.correct]}))};
+  dl(JSON.stringify(d,null,2),'studyai-'+A.docName.replace(/\.[^.]+$/,'')+'.json','application/json');
+}
+
+function exportAll(){
+  dl(JSON.stringify(A.notes,null,2),'studyai-all-notes.json','application/json');
+}
+
+function dl(content,name,type){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type}));
+  a.download=name;a.click();
+}
+
+// ══════════════════════════════════════
+//  LOADING
+// ══════════════════════════════════════
+function showLoading(show,msg){
+  $('ldOv').classList.toggle('hidden',!show);
+  if(msg)$('ldMsg').textContent=msg;
+  const ec=A.selChars.map(i=>A.chars[i].emoji);
+  ['lc1','lc2','lc3'].forEach((id,i)=>$(id).textContent=ec[i%ec.length]||'✨');
+}
+function ldMsg(m){$('ldMsg').textContent=m;}
+
+// ══════════════════════════════════════
+//  MISC
+// ══════════════════════════════════════
+function showHelp(){
+  alert(`📖 StudyAI Help Guide
+
+🎭 STORY: Characters explain your document scene by scene.
+  • NEXT ▶ — next scene
+  • ◀ PREV — previous scene  
+  • 🔊 — replay current voice
+  • VOICE — toggle narration on/off
+  • SUBS — toggle subtitles on/off
+
+🧩 PUZZLE: AI-generated quiz based on your document.
+  • Pick the correct answer from 4 options
+  • Get instant feedback and explanation
+
+📇 FLASHCARDS: Tap any card to reveal the answer.
+
+🤖 ASK AI: Type any question about the document.
+
+💾 NOTES: All study sessions auto-saved locally.
+  📤 Export — download as JSON (works on mobile!)
+
+📂 CHAPTERS: Click any chapter to jump there.
+
+Tips:
+• Register an account to save your progress name
+• Language toggle: English / Telugu
+• Difficulty affects how Gemini explains content`);
+}
+
+function goHome(){if(confirm('Go back to upload screen?'))showScreen('s-upload');}
+
+// Init voice list early
+window.speechSynthesis&&(window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices());
+</script>
+</body>
+</html>
